@@ -3,13 +3,37 @@ import MenuAdmin from './MenuAdmin';
 import Order from './Order';
 import Header from './Header';
 import Burger from './Burger';
+import base from '../base'
 
 import sampleBurgers from '../sample-burgers'
+import { json } from 'stylus/lib/functions';
 
 class App extends React.Component {
     state = {
         burgers: {},
         order: {},
+    }
+
+    componentDidMount(){
+        const {params} = this.props.match
+
+        const localStorageRef = localStorage.getItem(params.restaurantId)
+        if (localStorageRef) {
+            this.setState({order: JSON.parse(localStorageRef)})
+        }
+        this.ref = base.syncState(`${params.restaurantId}/burgers`,{
+            context: this,
+            state: 'burgers'
+        })
+    }
+
+    componentDidUpdate(){
+        const {params} = this.props.match
+        localStorage.setItem(params.restaurantId, JSON.stringify(this.state.order))
+    }
+
+    componentWillUnmount(){
+        base.removeBinding(this.ref)
     }
 
     addBurger = burger =>{
